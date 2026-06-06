@@ -47,7 +47,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scholarly Search'),
+        title: const Text('Search Papers'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Column(
@@ -122,15 +122,40 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
 
     if (state.works.isEmpty) {
-      return const Center(
+      final topics = [
+        'Artificial Intelligence',
+        'Machine Learning',
+        'Data Science',
+        'Cybersecurity',
+        'Internet of Things',
+        'Blockchain',
+        'Software Engineering',
+        'Deep Learning',
+      ];
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.search, size: 64, color: Colors.grey),
-            SizedBox(height: 12),
-            Text(
-              'Search for scholarly papers',
-              style: TextStyle(color: Colors.grey),
+            const Text(
+              'Popular Topics',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: topics.map((topic) {
+                return ActionChip(
+                  avatar: const Icon(Icons.trending_up, size: 16),
+                  label: Text(topic),
+                  onPressed: () {
+                    _controller.text = topic;
+                    _search();
+                  },
+                );
+              }).toList(),
             ),
           ],
         ),
