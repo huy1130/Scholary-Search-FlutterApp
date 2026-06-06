@@ -101,7 +101,9 @@ class _TrendScreenState extends ConsumerState<TrendScreen> {
                 tooltip: 'Previous 5 years',
               ),
               Text(
-                '${visibleYears.first} – ${visibleYears.last}',
+                visibleYears.isEmpty
+                    ? 'N/A'
+                    : '${visibleYears.first} – ${visibleYears.last}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
