@@ -3,13 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/analysis_provider.dart';
 
-class TrendScreen extends ConsumerWidget {
+class TrendScreen extends ConsumerStatefulWidget {
   const TrendScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(analysisProvider);
+  ConsumerState<TrendScreen> createState() => _TrendScreenState();
+}
 
+class _TrendScreenState extends ConsumerState<TrendScreen> {
+  int _windowStart = 0;
+  static const int _windowSize = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(analysisProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Publication Trends'),
@@ -44,14 +51,22 @@ class TrendScreen extends ConsumerWidget {
 
     final trend = state.trendByYear;
     final years = trend.keys.toList();
-    final maxY = trend.values.reduce((a, b) => a > b ? a : b).toDouble();
+    final maxWindow = (years.length - _windowSize).clamp(0, years.length);
+
+    // Clamp windowStart
+    final windowStart = _windowStart.clamp(0, maxWindow);
+    final windowEnd = (windowStart + _windowSize).clamp(0, years.length);
+    final visibleYears = years.sublist(windowStart, windowEnd);
+    final maxY = visibleYears
+        .map((y) => trend[y]!)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Topic label
           Text(
             'Topic: "${state.query}"',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -63,12 +78,50 @@ class TrendScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // Chart title
           const Text(
             'Publications per Year',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+
+          // Year range label
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: windowStart > 0
+                    ? () => setState(
+                        () => _windowStart = (windowStart - _windowSize).clamp(
+                          0,
+                          maxWindow,
+                        ),
+                      )
+                    : null,
+                icon: const Icon(Icons.chevron_left),
+                tooltip: 'Previous 5 years',
+              ),
+              Text(
+                '${visibleYears.first} – ${visibleYears.last}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              IconButton(
+                onPressed: windowEnd < years.length
+                    ? () => setState(
+                        () => _windowStart = (windowStart + _windowSize).clamp(
+                          0,
+                          maxWindow,
+                        ),
+                      )
+                    : null,
+                icon: const Icon(Icons.chevron_right),
+                tooltip: 'Next 5 years',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
 
           // Bar chart
           SizedBox(
@@ -76,14 +129,31 @@ class TrendScreen extends ConsumerWidget {
             child: BarChart(
               BarChartData(
                 maxY: maxY * 1.2,
-                barGroups: List.generate(years.length, (i) {
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => Colors.indigo.shade800,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final year = visibleYears[group.x];
+                      final count = rod.toY.toInt();
+                      return BarTooltipItem(
+                        '$year: $count papers',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                barGroups: List.generate(visibleYears.length, (i) {
                   return BarChartGroupData(
                     x: i,
                     barRods: [
                       BarChartRodData(
-                        toY: trend[years[i]]!.toDouble(),
+                        toY: trend[visibleYears[i]]!.toDouble(),
                         color: Theme.of(context).colorScheme.primary,
-                        width: years.length > 20 ? 8 : 14,
+                        width: 36,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ],
@@ -93,23 +163,20 @@ class TrendScreen extends ConsumerWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      reservedSize: 32,
                       getTitlesWidget: (value, meta) {
                         final i = value.toInt();
-                        if (i < 0 || i >= years.length) return const SizedBox();
-                        // Show every other year if too many
-                        if (years.length > 15 && i % 5 != 0) {
+                        if (i < 0 || i >= visibleYears.length) {
                           return const SizedBox();
                         }
-
                         return Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            '${years[i]}',
+                            '${visibleYears[i]}',
                             style: const TextStyle(fontSize: 11),
                           ),
                         );
                       },
-                      reservedSize: 32,
                     ),
                   ),
                   leftTitles: AxisTitles(
@@ -134,6 +201,15 @@ class TrendScreen extends ConsumerWidget {
                 gridData: const FlGridData(show: true),
                 borderData: FlBorderData(show: false),
               ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Page indicator
+          Center(
+            child: Text(
+              'Showing ${windowStart + 1}–$windowEnd of ${years.length} years',
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ),
           const SizedBox(height: 32),
@@ -194,7 +270,6 @@ class TrendScreen extends ConsumerWidget {
               ),
             );
           }),
-
           const SizedBox(height: 32),
 
           // Top Journals
@@ -251,7 +326,6 @@ class TrendScreen extends ConsumerWidget {
               ),
             );
           }),
-
           const SizedBox(height: 32),
 
           // Top Authors

@@ -81,9 +81,9 @@ class AnalysisState {
     final avgCitations =
         works.map((w) => w.citedByCount).reduce((a, b) => a + b) / total;
     final trend = trendByYear;
-    final mostActiveYear = trend.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
+    final mostActiveYear = trend.isNotEmpty
+        ? trend.entries.reduce((a, b) => a.value > b.value ? a : b).key
+        : 'N/A';
     final topJournal = topJournals.firstOrNull?.key ?? 'N/A';
     final topAuthor = topAuthors.firstOrNull?.key ?? 'N/A';
     final mostInfluential = topInfluentialPapers.firstOrNull;
