@@ -108,9 +108,9 @@ class OpenAlexService {
         works.map((w) => w.citedByCount).reduce((a, b) => a + b) /
         totalPublications;
     final trendByYear = getTrendByYear(works);
-    final mostActiveYear = trendByYear.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
+    final mostActiveYear = trendByYear.isNotEmpty
+        ? trendByYear.entries.reduce((a, b) => a.value > b.value ? a : b).key
+        : 'N/A';
     final topJournal = getTopJournals(works, top: 1).firstOrNull?.key ?? 'N/A';
     final topAuthor = getTopAuthors(works, top: 1).firstOrNull?.key ?? 'N/A';
     final mostInfluential = works.reduce(
