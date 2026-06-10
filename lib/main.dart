@@ -50,29 +50,76 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          // Khi chuyển sang Trend hoặc Dashboard, tự động analyze theo query hiện tại
-          if (index != 0) {
-            final query = ref.read(searchProvider).query;
-            if (query.isNotEmpty) {
-              _onSearch(query);
-            }
-          }
-          setState(() => _currentIndex = index);
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
-          NavigationDestination(icon: Icon(Icons.bar_chart), label: 'Trends'),
-          NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 600) {
+          // Large screen layout
+          return Scaffold(
+            body: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _currentIndex,
+                  onDestinationSelected: (index) {
+                    _onNavigate(index);
+                  },
+                  labelType: NavigationRailLabelType.all,
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.search),
+                      label: Text('Search'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.bar_chart),
+                      label: Text('Trends'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.dashboard),
+                      label: Text('Dashboard'),
+                    ),
+                  ],
+                ),
+                const VerticalDivider(thickness: 1, width: 1),
+                Expanded(
+                  child: IndexedStack(index: _currentIndex, children: _screens),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Small screen layout
+          return Scaffold(
+            body: IndexedStack(index: _currentIndex, children: _screens),
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: _onNavigate,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.search),
+                  label: 'Search',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart),
+                  label: 'Trends',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard),
+                  label: 'Dashboard',
+                ),
+              ],
+            ),
+          );
+        }
+      },
     );
+  }
+
+  void _onNavigate(int index) {
+    if (index != 0) {
+      final query = ref.read(searchProvider).query;
+      if (query.isNotEmpty) {
+        _onSearch(query);
+      }
+    }
+    setState(() => _currentIndex = index);
   }
 }

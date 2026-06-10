@@ -50,49 +50,63 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         title: const Text('Search Papers'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    onSubmitted: (_) => _search(),
-                    decoration: InputDecoration(
-                      hintText: 'Search papers, topics...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            children: [
+              // Search bar
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        onSubmitted: (_) => _search(),
+                        decoration: InputDecoration(
+                          hintText: 'Search papers, topics...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                          ),
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _search,
+                      child: const Text('Search'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Result count
+              if (state.totalCount > 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${state.totalCount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} results',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                FilledButton(onPressed: _search, child: const Text('Search')),
-              ],
-            ),
+
+              // Body
+              Expanded(child: _buildBody(state)),
+            ],
           ),
-
-          // Result count
-          if (state.totalCount > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '${state.totalCount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} results',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            ),
-
-          // Body
-          Expanded(child: _buildBody(state)),
-        ],
+        ),
       ),
     );
   }
@@ -210,6 +224,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   const SizedBox(height: 6),
+
+                  // Journal Name
+                  if (work.sourceName != null) ...[
+                    Text(
+                      work.sourceName!,
+                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.indigo[400]),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                  ],
 
                   // Chips row
                   Wrap(
