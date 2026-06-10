@@ -12,78 +12,93 @@ class DetailScreen extends StatelessWidget {
         title: const Text('Paper Detail'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              work.title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            if (work.authorNames.isNotEmpty) ...[
-              const Text(
-                'Authors',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                work.authorNames.join(', '),
-                style: const TextStyle(fontSize: 13),
-              ),
-              const SizedBox(height: 12),
-            ],
-
-            Row(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _infoCard(context, 'Year', '${work.publicationYear ?? 'N/A'}'),
-                const SizedBox(width: 10),
-                _infoCard(context, 'Citations', '${work.citedByCount}'),
-                const SizedBox(width: 10),
-                _infoCard(
-                  context,
-                  'Open Access',
-                  work.isOpenAccess ? 'Yes' : 'No',
-                  color: work.isOpenAccess ? Colors.green : null,
+                Text(
+                  work.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                const SizedBox(height: 12),
+
+                if (work.authorNames.isNotEmpty) ...[
+                  const Text(
+                    'Authors',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    work.authorNames.join(', '),
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                Row(
+                  children: [
+                    _infoCard(
+                      context,
+                      'Year',
+                      '${work.publicationYear ?? 'N/A'}',
+                    ),
+                    const SizedBox(width: 10),
+                    _infoCard(context, 'Citations', '${work.citedByCount}'),
+                    const SizedBox(width: 10),
+                    _infoCard(
+                      context,
+                      'Open Access',
+                      work.isOpenAccess ? 'Yes' : 'No',
+                      color: work.isOpenAccess ? Colors.green : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                if (work.sourceName != null) ...[
+                  const Text(
+                    'Journal / Source',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(work.sourceName!, style: const TextStyle(fontSize: 13)),
+                  const SizedBox(height: 12),
+                ],
+
+                if (work.doi != null) ...[
+                  const Text(
+                    'DOI',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    work.doi!,
+                    style: const TextStyle(fontSize: 13, color: Colors.indigo),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                if (work.abstractText != null) ...[
+                  const Text(
+                    'Abstract',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    work.abstractText!,
+                    style: const TextStyle(fontSize: 13, height: 1.5),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: 12),
-
-            if (work.sourceName != null) ...[
-              const Text(
-                'Journal / Source',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 4),
-              Text(work.sourceName!, style: const TextStyle(fontSize: 13)),
-              const SizedBox(height: 12),
-            ],
-
-            if (work.doi != null) ...[
-              const Text('DOI', style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              Text(
-                work.doi!,
-                style: const TextStyle(fontSize: 13, color: Colors.indigo),
-              ),
-              const SizedBox(height: 12),
-            ],
-
-            if (work.abstractText != null) ...[
-              const Text(
-                'Abstract',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                work.abstractText!,
-                style: const TextStyle(fontSize: 13, height: 1.5),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
